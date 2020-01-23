@@ -2,35 +2,53 @@ package com.shifat63.springmvcrestapi.controllers.v1;
 
 import com.shifat63.springmvcrestapi.api.v1.dto.IngredientDTO;
 import com.shifat63.springmvcrestapi.api.v1.dto.IngredientSetDTO;
-import com.shifat63.springmvcrestapi.api.v1.mapper.IngerdientDTOToIngredient;
-import com.shifat63.springmvcrestapi.api.v1.mapper.IngerdientToIngredientDTO;
+import com.shifat63.springmvcrestapi.api.v1.mapper.IngredientDTOToIngredient;
+import com.shifat63.springmvcrestapi.api.v1.mapper.IngredientToIngredientDTO;
+import com.shifat63.springmvcrestapi.domain.Ingredient;
 import com.shifat63.springmvcrestapi.services.service.IngredientService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
+import org.springframework.web.bind.annotation.*;
 
 // Author: Shifat63
 
 @RestController
-@RequestMapping("/api/v1/ingredients")
+@RequestMapping(IngredientController.BASE_URL)
 public class IngredientController {
-    private final IngredientService ingredientService;
-    private final IngerdientToIngredientDTO ingerdientToIngredientDTO;
-    private final IngerdientDTOToIngredient ingerdientDTOToIngredient;
 
-    public IngredientController(IngredientService ingredientService, IngerdientToIngredientDTO ingerdientToIngredientDTO, IngerdientDTOToIngredient ingerdientDTOToIngredient) {
+    public static final String BASE_URL = "/api/v1/ingredients";
+
+    private final IngredientService ingredientService;
+    private final IngredientToIngredientDTO ingredientToIngredientDTO;
+    private final IngredientDTOToIngredient ingredientDTOToIngredient;
+
+    public IngredientController(IngredientService ingredientService, IngredientToIngredientDTO ingredientToIngredientDTO, IngredientDTOToIngredient ingredientDTOToIngredient) {
         this.ingredientService = ingredientService;
-        this.ingerdientToIngredientDTO = ingerdientToIngredientDTO;
-        this.ingerdientDTOToIngredient = ingerdientDTOToIngredient;
+        this.ingredientToIngredientDTO = ingredientToIngredientDTO;
+        this.ingredientDTOToIngredient = ingredientDTOToIngredient;
     }
 
     @GetMapping
-    public ResponseEntity<IngredientSetDTO> getAllIngredients() throws Exception{
-        return new ResponseEntity<IngredientSetDTO>(
-                new IngredientSetDTO(ingerdientToIngredientDTO.convert(ingredientService.findAll())), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public IngredientSetDTO getAllIngredients() throws Exception{
+        return new IngredientSetDTO(ingredientToIngredientDTO.convertSet(ingredientService.findAll()));
+    }
+
+    @GetMapping({"/{id}"})
+    @ResponseStatus(HttpStatus.OK)
+    public IngredientDTO getIngredientById(@PathVariable Long id) throws Exception{
+        return ingredientToIngredientDTO.convert(ingredientService.findById(id));
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public IngredientDTO saveOrUpdateIngredient(@RequestBody IngredientDTO ingredientDTO) throws Exception{
+        Ingredient ingredient = ingredientService.saveOrUpdate(ingredientDTOToIngredient.convert(ingredientDTO));
+        return ingredientToIngredientDTO.convert(ingredient);
+    }
+
+    @DeleteMapping({"/{id}"})
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteIngredient(@PathVariable Long id) throws Exception{
+        ingredientService.deleteById(id);
     }
 }

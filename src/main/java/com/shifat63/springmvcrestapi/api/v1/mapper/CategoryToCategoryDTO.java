@@ -18,7 +18,7 @@ public class CategoryToCategoryDTO {
         return categoryDTO;
     }
 
-    public Set<CategoryDTO> convert(Set<Category> categories)
+    public Set<CategoryDTO> convertSet(Set<Category> categories)
     {
         Set<CategoryDTO> CategoryDTOs = new HashSet<>();
 

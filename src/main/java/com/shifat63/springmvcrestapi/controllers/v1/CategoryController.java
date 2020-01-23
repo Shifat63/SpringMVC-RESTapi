@@ -7,16 +7,15 @@ import com.shifat63.springmvcrestapi.api.v1.mapper.CategoryToCategoryDTO;
 import com.shifat63.springmvcrestapi.domain.Category;
 import com.shifat63.springmvcrestapi.services.service.CategoryService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
 
 // Author: Shifat63
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping(CategoryController.BASE_URL)
 public class CategoryController {
+
+    public static final String BASE_URL = "/api/v1/categories";
 
     private final CategoryService categoryService;
     private final CategoryDTOToCategory categoryDTOToCategory;
@@ -29,25 +28,27 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<CatorgorySetDTO> getAllCatetories() throws Exception{
-        return new ResponseEntity<CatorgorySetDTO>(
-                new CatorgorySetDTO(categoryToCategoryDTO.convert(categoryService.findAll())), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public CatorgorySetDTO getAllCategories() throws Exception{
+        return new CatorgorySetDTO(categoryToCategoryDTO.convertSet(categoryService.findAll()));
     }
 
     @GetMapping({"/{id}"})
-    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) throws Exception{
-        return new ResponseEntity<CategoryDTO>(categoryToCategoryDTO.convert(categoryService.findById(id)), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public CategoryDTO getCategoryById(@PathVariable Long id) throws Exception{
+        return categoryToCategoryDTO.convert(categoryService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> createNewCategory(@RequestBody CategoryDTO categoryDTO) throws Exception{
+    @ResponseStatus(HttpStatus.CREATED)
+    public CategoryDTO saveOrUpdateCategory(@RequestBody CategoryDTO categoryDTO) throws Exception{
         Category category = categoryService.saveOrUpdate(categoryDTOToCategory.convert(categoryDTO));
-        return new ResponseEntity<CategoryDTO>(categoryToCategoryDTO.convert(category), HttpStatus.CREATED);
+        return categoryToCategoryDTO.convert(category);
     }
 
-//    @PutMapping({"/{id}"})
-//    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO) throws Exception{
-//        Category category = categoryService.saveOrUpdate(categoryDTOToCategory.convert(categoryDTO));
-//        return new ResponseEntity<CategoryDTO>(categoryToCategoryDTO.convert(category), HttpStatus.OK);
-//    }
+    @DeleteMapping({"/{id}"})
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteCategory(@PathVariable Long id) throws Exception{
+        categoryService.deleteById(id);
+    }
 }

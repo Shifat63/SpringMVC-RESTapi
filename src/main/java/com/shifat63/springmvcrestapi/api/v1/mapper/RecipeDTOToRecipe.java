@@ -13,11 +13,11 @@ import java.util.Set;
 @Component
 public class RecipeDTOToRecipe {
     private CategoryDTOToCategory categoryDTOToCategory;
-    private IngerdientDTOToIngredient ingerdientDTOToIngredient;
+    private IngredientDTOToIngredient ingredientDTOToIngredient;
 
-    public RecipeDTOToRecipe(CategoryDTOToCategory categoryDTOToCategory, IngerdientDTOToIngredient ingerdientDTOToIngredient) {
+    public RecipeDTOToRecipe(CategoryDTOToCategory categoryDTOToCategory, IngredientDTOToIngredient ingredientDTOToIngredient) {
         this.categoryDTOToCategory = categoryDTOToCategory;
-        this.ingerdientDTOToIngredient = ingerdientDTOToIngredient;
+        this.ingredientDTOToIngredient = ingredientDTOToIngredient;
     }
 
     public Recipe convert(RecipeDTO recipeDTO)
@@ -29,13 +29,13 @@ public class RecipeDTOToRecipe {
             recipe.getCategories().add(categoryDTOToCategory.convert(categoryDTO));
         }
         for (IngredientDTO ingredientDTO: recipeDTO.getIngredients()) {
-            recipe.getIngredients().add(ingerdientDTOToIngredient.convert(ingredientDTO));
+            recipe.getIngredients().add(ingredientDTOToIngredient.convert(ingredientDTO));
         }
 
         return recipe;
     }
 
-    public Set<Recipe> convert(Set<RecipeDTO> recipeDTOs)
+    public Set<Recipe> convertSet(Set<RecipeDTO> recipeDTOs)
     {
         Set<Recipe> recipes = new HashSet<>();
 
@@ -47,7 +47,7 @@ public class RecipeDTOToRecipe {
                 recipe.getCategories().add(categoryDTOToCategory.convert(categoryDTO));
             }
             for (IngredientDTO ingredientDTO: recipeDTO.getIngredients()) {
-                recipe.getIngredients().add(ingerdientDTOToIngredient.convert(ingredientDTO));
+                recipe.getIngredients().add(ingredientDTOToIngredient.convert(ingredientDTO));
             }
             recipes.add(recipe);
         }

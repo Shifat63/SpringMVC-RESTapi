@@ -10,7 +10,7 @@ import java.util.Set;
 // Author: Shifat63
 
 @Component
-public class IngerdientToIngredientDTO {
+public class IngredientToIngredientDTO {
     public IngredientDTO convert(Ingredient ingredient)
     {
         IngredientDTO ingredientDTO = new IngredientDTO();
@@ -19,7 +19,7 @@ public class IngerdientToIngredientDTO {
         return ingredientDTO;
     }
 
-    public Set<IngredientDTO> convert(Set<Ingredient> Ingredients)
+    public Set<IngredientDTO> convertSet(Set<Ingredient> Ingredients)
     {
         Set<IngredientDTO> IngredientDTOs = new HashSet<>();
 

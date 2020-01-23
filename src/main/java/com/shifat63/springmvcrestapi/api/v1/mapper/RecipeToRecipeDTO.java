@@ -1,24 +1,24 @@
 package com.shifat63.springmvcrestapi.api.v1.mapper;
-// Author: Shifat63
 
 import com.shifat63.springmvcrestapi.api.v1.dto.RecipeDTO;
 import com.shifat63.springmvcrestapi.domain.Category;
 import com.shifat63.springmvcrestapi.domain.Ingredient;
 import com.shifat63.springmvcrestapi.domain.Recipe;
 import org.springframework.stereotype.Component;
-
 import java.util.HashSet;
 import java.util.Set;
+
+// Author: Shifat63
 
 @Component
 public class RecipeToRecipeDTO {
 
     private CategoryToCategoryDTO categoryToCategoryDTO;
-    private IngerdientToIngredientDTO ingerdientToIngredientDTO;
+    private IngredientToIngredientDTO ingredientToIngredientDTO;
 
-    public RecipeToRecipeDTO(CategoryToCategoryDTO categoryToCategoryDTO, IngerdientToIngredientDTO ingerdientToIngredientDTO) {
+    public RecipeToRecipeDTO(CategoryToCategoryDTO categoryToCategoryDTO, IngredientToIngredientDTO ingredientToIngredientDTO) {
         this.categoryToCategoryDTO = categoryToCategoryDTO;
-        this.ingerdientToIngredientDTO = ingerdientToIngredientDTO;
+        this.ingredientToIngredientDTO = ingredientToIngredientDTO;
     }
 
     public RecipeDTO convert(Recipe recipe)
@@ -30,13 +30,13 @@ public class RecipeToRecipeDTO {
             recipeDTO.getCategories().add(categoryToCategoryDTO.convert(category));
         }
         for (Ingredient ingredient: recipe.getIngredients()) {
-            recipeDTO.getIngredients().add(ingerdientToIngredientDTO.convert(ingredient));
+            recipeDTO.getIngredients().add(ingredientToIngredientDTO.convert(ingredient));
         }
 
         return recipeDTO;
     }
 
-    public Set<RecipeDTO> convert(Set<Recipe> recipes)
+    public Set<RecipeDTO> convertSet(Set<Recipe> recipes)
     {
         Set<RecipeDTO> recipeDTOs = new HashSet<>();
         for (Recipe recipe : recipes) {
@@ -47,7 +47,7 @@ public class RecipeToRecipeDTO {
                 recipeDTO.getCategories().add(categoryToCategoryDTO.convert(category));
             }
             for (Ingredient ingredient: recipe.getIngredients()) {
-                recipeDTO.getIngredients().add(ingerdientToIngredientDTO.convert(ingredient));
+                recipeDTO.getIngredients().add(ingredientToIngredientDTO.convert(ingredient));
             }
             recipeDTOs.add(recipeDTO);
         }
