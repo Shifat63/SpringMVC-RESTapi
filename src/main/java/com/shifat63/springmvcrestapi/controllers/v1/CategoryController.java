@@ -1,7 +1,7 @@
 package com.shifat63.springmvcrestapi.controllers.v1;
 
 import com.shifat63.springmvcrestapi.api.v1.dto.CategoryDTO;
-import com.shifat63.springmvcrestapi.api.v1.dto.CatorgorySetDTO;
+import com.shifat63.springmvcrestapi.api.v1.dto.CategorySetDTO;
 import com.shifat63.springmvcrestapi.api.v1.mapper.CategoryDTOToCategory;
 import com.shifat63.springmvcrestapi.api.v1.mapper.CategoryToCategoryDTO;
 import com.shifat63.springmvcrestapi.domain.Category;
@@ -33,8 +33,8 @@ public class CategoryController {
     @ApiOperation(value = "Get all categories")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public CatorgorySetDTO getAllCategories() throws Exception{
-        return new CatorgorySetDTO(categoryToCategoryDTO.convertSet(categoryService.findAll()));
+    public CategorySetDTO getAllCategories() throws Exception{
+        return new CategorySetDTO(categoryToCategoryDTO.convertSet(categoryService.findAll()));
     }
 
     @ApiOperation(value = "Get a certain category based on id")

@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Data
 @AllArgsConstructor
-public class CatorgorySetDTO {
+public class CategorySetDTO {
 
     Set<CategoryDTO> categories = new HashSet<>();
 
