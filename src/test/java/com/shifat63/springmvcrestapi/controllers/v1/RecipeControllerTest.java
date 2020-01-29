@@ -16,13 +16,11 @@ import org.mockito.exceptions.base.MockitoException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.HashSet;
 import java.util.Set;
-
 import static com.shifat63.springmvcrestapi.controllers.v1.ConvertToJson.asJsonString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static com.shifat63.springmvcrestapi.controllers.v1.ConvertToXML.asXmlString;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -30,8 +28,8 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.xpath;
 
 // Author: Shifat63
 
@@ -111,28 +109,52 @@ class RecipeControllerTest {
         when(recipeToRecipeDTO.convertSet(anySet())).thenReturn(recipeDTOSet);
 
         mockMvc.perform(get(recipeController.BASE_URL)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recipes", hasSize(2)))
-                .andExpect(jsonPath("$.recipes[0].recipeId", equalTo(2)))
+                .andExpect(jsonPath("$.recipes[0].recipeId", equalTo(Integer.parseInt(recipeId2.toString()))))
                 .andExpect(jsonPath("$.recipes[0].name", equalTo(name2)))
                 .andExpect(jsonPath("$.recipes[0].categories", hasSize(1)))
-                .andExpect(jsonPath("$.recipes[0].categories[0].categoryId", equalTo(2)))
+                .andExpect(jsonPath("$.recipes[0].categories[0].categoryId", equalTo(Integer.parseInt(categoryId2.toString()))))
                 .andExpect(jsonPath("$.recipes[0].categories[0].name", equalTo(categoryName2)))
                 .andExpect(jsonPath("$.recipes[0].ingredients", hasSize(1)))
-                .andExpect(jsonPath("$.recipes[0].ingredients[0].ingredientId", equalTo(2)))
+                .andExpect(jsonPath("$.recipes[0].ingredients[0].ingredientId", equalTo(Integer.parseInt(ingredientId2.toString()))))
                 .andExpect(jsonPath("$.recipes[0].ingredients[0].name", equalTo(ingredientName2)))
-                .andExpect(jsonPath("$.recipes[1].recipeId", equalTo(1)))
+                .andExpect(jsonPath("$.recipes[1].recipeId", equalTo(Integer.parseInt(recipeId.toString()))))
                 .andExpect(jsonPath("$.recipes[1].name", equalTo(name)))
                 .andExpect(jsonPath("$.recipes[1].categories", hasSize(1)))
-                .andExpect(jsonPath("$.recipes[1].categories[0].categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.recipes[1].categories[0].categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.recipes[1].categories[0].name", equalTo(categoryName)))
                 .andExpect(jsonPath("$.recipes[1].ingredients", hasSize(1)))
-                .andExpect(jsonPath("$.recipes[1].ingredients[0].ingredientId", equalTo(1)))
+                .andExpect(jsonPath("$.recipes[1].ingredients[0].ingredientId", equalTo(Integer.parseInt(ingredientId.toString()))))
                 .andExpect(jsonPath("$.recipes[1].ingredients[0].name", equalTo(ingredientName)));
 
-        verify(recipeService, times(1)).findAll();
-        verify(recipeToRecipeDTO, times(1)).convertSet(anySet());
+        mockMvc.perform(get(recipeController.BASE_URL)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk())
+                .andExpect(xpath("RecipeSetDTO/recipes").exists())
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes").nodeCount(is(2)))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/recipeId").string(recipeId2.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/name").string(name2))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/categories/categories").nodeCount(is(1)))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/categories/categories[1]/categoryId").string(categoryId2.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/categories/categories[1]/name").string(categoryName2))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/ingredients/ingredients").nodeCount(is(1)))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/ingredients/ingredients[1]/ingredientId").string(ingredientId2.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[1]/ingredients/ingredients[1]/name").string(ingredientName2))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/recipeId").string(recipeId.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/name").string(name))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/categories/categories").nodeCount(is(1)))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/categories/categories[1]/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/categories/categories[1]/name").string(categoryName))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/ingredients/ingredients").nodeCount(is(1)))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/ingredients/ingredients[1]/ingredientId").string(ingredientId.toString()))
+                .andExpect(xpath("RecipeSetDTO/recipes/recipes[2]/ingredients/ingredients[1]/name").string(ingredientName));
+
+        verify(recipeService, times(2)).findAll();
+        verify(recipeToRecipeDTO, times(2)).convertSet(anySet());
     }
 
     @Test
@@ -156,20 +178,34 @@ class RecipeControllerTest {
 
         when(recipeToRecipeDTO.convert(any())).thenReturn(recipeDTO);
 
-        mockMvc.perform(get(recipeController.BASE_URL + "/1")
+        mockMvc.perform(get(recipeController.BASE_URL + "/" + recipeId)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.recipeId", equalTo(1)))
+                .andExpect(jsonPath("$.recipeId", equalTo(Integer.parseInt(recipeId.toString()))))
                 .andExpect(jsonPath("$.name", equalTo(name)))
                 .andExpect(jsonPath("$.categories", hasSize(1)))
-                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.categories[0].name", equalTo(categoryName)))
                 .andExpect(jsonPath("$.ingredients", hasSize(1)))
-                .andExpect(jsonPath("$.ingredients[0].ingredientId", equalTo(1)))
+                .andExpect(jsonPath("$.ingredients[0].ingredientId", equalTo(Integer.parseInt(ingredientId.toString()))))
                 .andExpect(jsonPath("$.ingredients[0].name", equalTo(ingredientName)));
 
-        verify(recipeService, times(1)).findById(anyLong());
-        verify(recipeToRecipeDTO, times(1)).convert(any());
+        mockMvc.perform(get(recipeController.BASE_URL + "/" + recipeId)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk())
+                .andExpect(xpath("RecipeDTO/recipeId").string(recipeId.toString()))
+                .andExpect(xpath("RecipeDTO/name").string(name))
+                .andExpect(xpath("RecipeDTO/categories/categories").nodeCount(is(1)))
+                .andExpect(xpath("RecipeDTO/categories/categories[1]/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("RecipeDTO/categories/categories[1]/name").string(categoryName))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients").nodeCount(is(1)))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients[1]/ingredientId").string(ingredientId.toString()))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients[1]/name").string(ingredientName));
+
+        verify(recipeService, times(2)).findById(anyLong());
+        verify(recipeToRecipeDTO, times(2)).convert(any());
     }
 
     @Test
@@ -194,30 +230,49 @@ class RecipeControllerTest {
         when(recipeToRecipeDTO.convert(any())).thenReturn(recipeDTO);
 
         mockMvc.perform(post(recipeController.BASE_URL)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(recipeDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.recipeId", equalTo(1)))
+                .andExpect(jsonPath("$.recipeId", equalTo(Integer.parseInt(recipeId.toString()))))
                 .andExpect(jsonPath("$.name", equalTo(name)))
                 .andExpect(jsonPath("$.categories", hasSize(1)))
-                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.categories[0].name", equalTo(categoryName)))
                 .andExpect(jsonPath("$.ingredients", hasSize(1)))
-                .andExpect(jsonPath("$.ingredients[0].ingredientId", equalTo(1)))
+                .andExpect(jsonPath("$.ingredients[0].ingredientId", equalTo(Integer.parseInt(ingredientId.toString()))))
                 .andExpect(jsonPath("$.ingredients[0].name", equalTo(ingredientName)));
 
-        verify(recipeService, times(1)).saveOrUpdate(any());
-        verify(recipeDTOToRecipe, times(1)).convert(any());
-        verify(recipeToRecipeDTO, times(1)).convert(any());
+        mockMvc.perform(post(recipeController.BASE_URL)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML)
+                .content(asXmlString(recipeDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(xpath("RecipeDTO/recipeId").string(recipeId.toString()))
+                .andExpect(xpath("RecipeDTO/name").string(name))
+                .andExpect(xpath("RecipeDTO/categories/categories").nodeCount(is(1)))
+                .andExpect(xpath("RecipeDTO/categories/categories[1]/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("RecipeDTO/categories/categories[1]/name").string(categoryName))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients").nodeCount(is(1)))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients[1]/ingredientId").string(ingredientId.toString()))
+                .andExpect(xpath("RecipeDTO/ingredients/ingredients[1]/name").string(ingredientName));
+
+        verify(recipeService, times(2)).saveOrUpdate(any());
+        verify(recipeDTOToRecipe, times(2)).convert(any());
+        verify(recipeToRecipeDTO, times(2)).convert(any());
     }
 
     @Test
     void deleteRecipeTest() throws Exception {
-        mockMvc.perform(delete(recipeController.BASE_URL + "/1")
+        mockMvc.perform(delete(recipeController.BASE_URL + "/" + recipeId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(recipeService, times(1)).deleteById(anyLong());
+        mockMvc.perform(delete(recipeController.BASE_URL + "/" + recipeId)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+
+        verify(recipeService, times(2)).deleteById(anyLong());
     }
 
     @Test
@@ -226,7 +281,13 @@ class RecipeControllerTest {
         when(recipeToRecipeDTO.convert(any())).thenThrow(MockitoException.class);
 
         mockMvc.perform(get(recipeController.BASE_URL + "/2312")
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get(recipeController.BASE_URL + "/2312")
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
                 .andExpect(status().isBadRequest());
     }
 }

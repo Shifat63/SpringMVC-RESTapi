@@ -17,12 +17,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.HashSet;
 import java.util.Set;
 import static com.shifat63.springmvcrestapi.controllers.v1.ConvertToJson.asJsonString;
+import static com.shifat63.springmvcrestapi.controllers.v1.ConvertToXML.asXmlString;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.xpath;
 
 // Author: Shifat63
 
@@ -70,16 +71,28 @@ class CategoryControllerTest {
         when(categoryToCategoryDTO.convertSet(anySet())).thenReturn(categoryDTOSet);
 
         mockMvc.perform(get(categoryController.BASE_URL)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categories", hasSize(2)))
-                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.categories[0].categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.categories[0].name", equalTo(name)))
-                .andExpect(jsonPath("$.categories[1].categoryId", equalTo(2)))
+                .andExpect(jsonPath("$.categories[1].categoryId", equalTo(Integer.parseInt(categoryId2.toString()))))
                 .andExpect(jsonPath("$.categories[1].name", equalTo(name2)));
 
-        verify(categoryService, times(1)).findAll();
-        verify(categoryToCategoryDTO, times(1)).convertSet(anySet());
+        mockMvc.perform(get(categoryController.BASE_URL)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk())
+                .andExpect(xpath("CategorySetDTO/categories").exists())
+                .andExpect(xpath("CategorySetDTO/categories/categories").nodeCount(is(2)))
+                .andExpect(xpath("CategorySetDTO/categories/categories[1]/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("CategorySetDTO/categories/categories[1]/name").string(name))
+                .andExpect(xpath("CategorySetDTO/categories/categories[2]/categoryId").string(categoryId2.toString()))
+                .andExpect(xpath("CategorySetDTO/categories/categories[2]/name").string(name2));
+
+        verify(categoryService, times(2)).findAll();
+        verify(categoryToCategoryDTO, times(2)).convertSet(anySet());
     }
 
     @Test
@@ -90,14 +103,23 @@ class CategoryControllerTest {
 
         when(categoryToCategoryDTO.convert(any())).thenReturn(categoryDTO);
 
-        mockMvc.perform(get(categoryController.BASE_URL + "/1")
+        mockMvc.perform(get(categoryController.BASE_URL + "/" + categoryId)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.name", equalTo(name)));
 
-        verify(categoryService, times(1)).findById(anyLong());
-        verify(categoryToCategoryDTO, times(1)).convert(any());
+        mockMvc.perform(get(categoryController.BASE_URL + "/" + categoryId)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk())
+                .andExpect(xpath("CategoryDTO").exists())
+                .andExpect(xpath("CategoryDTO/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("CategoryDTO/name").string(name));
+
+        verify(categoryService, times(2)).findById(anyLong());
+        verify(categoryToCategoryDTO, times(2)).convert(any());
     }
 
     @Test
@@ -109,24 +131,38 @@ class CategoryControllerTest {
         when(categoryToCategoryDTO.convert(any())).thenReturn(categoryDTO);
 
         mockMvc.perform(post(categoryController.BASE_URL)
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(categoryDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.categoryId", equalTo(1)))
+                .andExpect(jsonPath("$.categoryId", equalTo(Integer.parseInt(categoryId.toString()))))
                 .andExpect(jsonPath("$.name", equalTo(name)));
 
-        verify(categoryService, times(1)).saveOrUpdate(any());
-        verify(categoryDTOToCategory, times(1)).convert(any());
-        verify(categoryToCategoryDTO, times(1)).convert(any());
+        mockMvc.perform(post(categoryController.BASE_URL)
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML)
+                .content(asXmlString(categoryDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(xpath("CategoryDTO").exists())
+                .andExpect(xpath("CategoryDTO/categoryId").string(categoryId.toString()))
+                .andExpect(xpath("CategoryDTO/name").string(name));
+
+        verify(categoryService, times(2)).saveOrUpdate(any());
+        verify(categoryDTOToCategory, times(2)).convert(any());
+        verify(categoryToCategoryDTO, times(2)).convert(any());
     }
 
     @Test
     void deleteCategoryTest() throws Exception {
-        mockMvc.perform(delete(categoryController.BASE_URL + "/1")
+        mockMvc.perform(delete(categoryController.BASE_URL + "/" + categoryId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(categoryService, times(1)).deleteById(anyLong());
+        mockMvc.perform(delete(categoryController.BASE_URL + "/" + categoryId)
+                .contentType(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+
+        verify(categoryService, times(2)).deleteById(anyLong());
     }
 
     @Test
@@ -135,7 +171,13 @@ class CategoryControllerTest {
         when(categoryToCategoryDTO.convert(any())).thenThrow(MockitoException.class);
 
         mockMvc.perform(get(categoryController.BASE_URL + "/2312")
+                .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get(categoryController.BASE_URL + "/2312")
+                .accept(MediaType.APPLICATION_XML)
+                .contentType(MediaType.APPLICATION_XML))
                 .andExpect(status().isBadRequest());
     }
 }
