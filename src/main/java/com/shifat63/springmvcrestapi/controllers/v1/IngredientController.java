@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 // Author: Shifat63
 
+@CrossOrigin
 @Api(value = "Handle Ingredient related operations")
 @RestController
 @RequestMapping(IngredientController.BASE_URL)
