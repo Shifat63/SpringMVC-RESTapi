@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 // Author: Shifat63
 
+@CrossOrigin
 @Api(value = "Handle Category related operations")
 @RestController
 @RequestMapping(CategoryController.BASE_URL)
